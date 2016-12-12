@@ -139,7 +139,7 @@ Custom property | Description | Default
       .expansion-panel-title {
         transition:
           opacity .15s cubic-bezier(0.4, 0.0, 0.2, 1) .15s,
-          max-height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
+          height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
       }
       paper-material {
         transition:
@@ -147,8 +147,8 @@ Custom property | Description | Default
       }
       .expansion-panel-content {
         transition:
-          height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s,
-          opacity 0.3s ease-in-out 0.3s;
+          opacity 0.3s ease-in-out 0.3s,
+          height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
       }
     </style>
 
@@ -216,8 +216,7 @@ Custom property | Description | Default
         }
 
         // Set the height to the calculated content
-        this.$.wrapper.style.height = !e ? '0px' :
-          window.getComputedStyle(this.$.content, null).getPropertyValue('height');
+        this.$.wrapper.style.height = (e && this.$.content.offsetHeight || 0) + 'px';
 
         this.set('expanded', e);
       },
