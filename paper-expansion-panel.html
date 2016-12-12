@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 
 <!--
 A simple WIP Material Design Expansion Panel. Use the `.button` class to attach
@@ -52,9 +52,8 @@ Custom property | Description | Default
         align-items: center;
         display: flex;
       }
-      iron-icon {
+      paper-icon-button {
         color: var(--secondary-text-color, rgba(0,0,0,0.54));
-        margin-left: 16px;
       }
       paper-material {
         box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .14),
@@ -62,8 +61,7 @@ Custom property | Description | Default
           0 3px 1px -2px rgba(0, 0, 0, 0.2),
           0 0px 1px 0 rgba(0, 0, 0, .2);
         background: var(--paper-expansion-panel-background-color, #fff);
-        margin: 0 24px;
-        padding: 16px;
+        padding: 8px 16px 8px 24px;
       }
       paper-material:hover {
         background: var(--paper-expansion-panel-hover-color, #f4f4f4);
@@ -73,27 +71,20 @@ Custom property | Description | Default
       /* EXPANSION STATES */
       :host([expanded]) paper-material:hover{
         background: var(--paper-expansion-panel-background-color, #fff);
+        cursor: default;
       }
       :host([expanded]) paper-material{
         box-shadow:
           0 2px 2px 0 rgba(0, 0, 0, 0.14),
           0 1px 5px 0 rgba(0, 0, 0, 0.12),
           0 3px 1px -2px rgba(0, 0, 0, 0.2);
-        padding: 24px 24px 0px 24px;
-        margin: 24px 0;
-      }
-      :host([expanded]) iron-icon {
-        opacity: 0;
+        margin-bottom: 16px;
       }
       :host([expanded]) .expansion-panel-content {
         opacity: 1;
       }
       :host([expanded]) .expansion-panel-value,
-      :host([expanded]) .expansion-panel-meta {
         opacity: 0;
-      }
-      :host([expanded]) .expansion-panel-meta {
-        max-height: 0;
       }
       :host([expanded]) .expansion-panel-title {
         text-rendering: geometricPrecision;
@@ -102,32 +93,33 @@ Custom property | Description | Default
 
       /* CONTENT BLOCKS */
       .expansion-panel-title,
-      .expansion-panel-value,
-      .expansion-panel-meta {
+      .expansion-panel-value {
         text-overflow: ellipsis;
         white-space: nowrap;
         transition: initial;
-        margin-right: 16px;
+        margin-right: 8px;
         overflow: hidden;
       }
       .expansion-panel-title {
         color: var(--paper-expansion-panel-title-color, #000);
-        width: 144px;
+      }
+      @media (max-width: 400px) {
+        .expansion-panel-title {
+          max-width: 70px;
+        }
+      }
+      @media (min-width: 480px) {
+        .expansion-panel-title {
+          width: 200px;
+        }
       }
       .expansion-panel-content,
-      .expansion-panel-value,
-      .expansion-panel-meta {
+      .expansion-panel-value {
         color: var(--paper-expansion-panel-title-color, rgba(0,0,0,0.54));
         flex: 1;
       }
-      .expansion-panel-meta {
-        font-weight: normal;
-        font-size: 12px;
-        display: block;
-        max-height: 20px;
-      }
       .expansion-panel-overflow {
-        padding-top: 12px;
+        padding-top: 16px;
       }
       .expansion-panel-content {
         overflow: hidden;
@@ -138,35 +130,33 @@ Custom property | Description | Default
         text-align: right;
         padding: 24px 0px;
       }
+      .expansion-panel-buttons:empty {
+        display: none;
+      }
 
       /* ANIMATION CONFIG */
       .expansion-panel-value,
-      .expansion-panel-title,
-      .expansion-panel-meta {
+      .expansion-panel-title {
         transition:
           opacity .15s cubic-bezier(0.4, 0.0, 0.2, 1) .15s,
           max-height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
       }
       paper-material {
         transition:
-          margin .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s,
-          padding .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
+          margin .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
       }
       .expansion-panel-content {
         transition:
           height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s,
           opacity 0.3s ease-in-out 0.3s;
       }
-      iron-icon {
-        transition: opacity .15s ease-in-out .15s;
-      }
     </style>
 
-    <paper-material on-tap="_handleTap" elevation="0">
+    <paper-material on-tap="expand" elevation="0">
       <header>
-        <span class="expansion-panel-title">[[panelTitle]]<span class="expansion-panel-meta">[[panelMeta]]</span></span>
-        <span class="expansion-panel-value">[[panelValue]]</span>
-        <iron-icon icon="expand-more" title="Expand / collapse card contents"></iron-icon>
+        <span class="expansion-panel-title">[[title]]</span>
+        <span class="expansion-panel-value">[[_value(expanded, value)]]</span>
+        <paper-icon-button icon="[[_icon(expanded)]]" title="Expand / collapse card contents" on-tap="toggle"></paper-icon-button>
       </header>
       <div class="expansion-panel-content" id="wrapper">
         <div class="expansion-panel-overflow" id="content">
@@ -176,77 +166,93 @@ Custom property | Description | Default
       </div>
     </paper-material>
   </template>
+
+  <script>
+    Polymer({
+      is: 'paper-expansion-panel',
+      properties: {
+        /**
+         * `title` indicates the title of the expansion panel.
+         */
+        title: String,
+
+        /**
+         * `value` the content to display in the header when the panel is collapsed.
+         */
+        value: String,
+
+        /**
+         * `valueExpanded` the content to display in the header when the panel is expanded.
+         */
+        valueExpanded: String,
+
+        /**
+         * `expanded` defines whether the panel is expanded or collapsed.
+         */
+        expanded: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false
+        }
+      },
+
+
+      /**
+       * Collapses and expands the panel. Takes an optional
+       * paremter definining whether the panel is to be expanded or not.
+       *
+       * @param {boolean} expanded The panel is to be expanded.
+       */
+      toggle: function (e) {
+        if (e && e.stopPropagation) {
+          e.cancelBubble = true;
+          e.stopPropagation();
+        }
+
+        e = typeof e === 'boolean' ? e : !this.expanded;
+
+        if (this.expanded === e) {
+          return;
+        }
+
+        // Set the height to the calculated content
+        this.$.wrapper.style.height = !e ? '0px' :
+          window.getComputedStyle(this.$.content, null).getPropertyValue('height');
+
+        this.set('expanded', e);
+      },
+
+      /**
+       * Expands the panel.
+       */
+      expand: function () {
+        return this.toggle(true);
+      },
+
+      /**
+       * Collapse the panel.
+       */
+      collapse: function () {
+        return this.toggle(false);
+      },
+
+      attached: function () {
+        // Move elements with the `class` button to the action area
+        [].slice.call(this.querySelectorAll('.button')).forEach(function (btn) {
+          this.$.buttons.appendChild(btn);
+        }, this);
+
+        Polymer.updateStyles();
+      },
+
+      _value: function (expanded) {
+        return expanded ? (this.valueExpanded || this.value) : this.value;
+      },
+
+      _icon: function (expanded) {
+        // Determines icon based on expanded state
+        return 'expand-'.concat(expanded ? 'less' : 'more');
+      }
+    });
+  </script>
 </dom-module>
-
-<script>
-
-  Polymer({
-
-    is: 'paper-expansion-panel',
-
-    properties: {
-
-      /**
-       * `panelTitle` indicates the title of the expansion panel.
-       */
-      panelTitle: String,
-
-      /**
-       * `panelValue` the content to display when the panel is collapsed.
-       */
-      panelValue: String,
-
-      /**
-       * `panelMeta` additional text to show underneath the panel title.
-       */
-      panelMeta: String,
-
-
-      /**
-       * `expanded` defines whether the panel is expanded or collapsed.
-       */
-      expanded: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false
-      }
-
-    },
-
-
-    /**
-     * Collapses and expands the panel. Takes an optional
-     * paremter definining whether the panel is expanded or not.
-     *
-     * @param {boolean} expanded The panel is expanded.
-     */
-    toggle: function(exp){
-      // calculate the current height of the overflowing content
-      var contentHeight = window.getComputedStyle(this.$.content,null).
-        getPropertyValue("height");
-      var expanded = exp === true ? exp : !this.get('expanded');
-      this.set('expanded', expanded);
-      // set the height to the calculated content
-      this.$.wrapper.style.height =
-        this.get('expanded') ? contentHeight : '0px';
-    },
-
-    _handleTap: function(ev){
-      if (!this.get('expanded') && !ev.target.closest('.button')){
-        this.toggle();
-      }
-    },
-
-    attached: function(){
-      var self = this;
-      // automatically add elements with the `class` button to the
-      // action area of the paper-expansion-panel.
-      [].slice.call(this.querySelectorAll('.button')).
-        forEach(function(btn){
-          self.$.buttons.appendChild(btn);
-      });
-      Polymer.updateStyles();
-    },
-  });
-
-</script>
