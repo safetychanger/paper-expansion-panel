@@ -94,16 +94,18 @@ Custom property | Description | Default
       /* CONTENT BLOCKS */
       .expansion-panel-title,
       .expansion-panel-value {
-        text-overflow: ellipsis;
         white-space: nowrap;
         transition: initial;
         margin-right: 8px;
+      }
+      .expansion-panel-title ::slotted([slot=title]), .expansion-panel-value ::slotted([slot=value]) {
         overflow: hidden;
+        text-overflow: ellipsis;
       }
       .expansion-panel-title {
         color: var(--paper-expansion-panel-title-color, #000);
       }
-      @media (max-width: 400px) {
+      @media (max-width: 420px) {
         .expansion-panel-title {
           max-width: 70px;
         }
@@ -126,11 +128,11 @@ Custom property | Description | Default
         opacity: 0;
         height: 0;
       }
-      .expansion-panel-buttons {
+      .expansion-panel-buttons > * {
         text-align: right;
         padding: 24px 0px;
       }
-      .expansion-panel-buttons:empty {
+      .expansion-panel-buttons > *:empty {
         display: none;
       }
 
@@ -147,21 +149,27 @@ Custom property | Description | Default
       }
       .expansion-panel-content {
         transition:
-          opacity 0.3s ease-in-out 0.3s,
+        opacity 0.3s ease-in-out 0.3s,
           height .4s cubic-bezier(0.4, 0.0, 0.2, 1) .15s;
       }
     </style>
 
     <paper-material on-tap="expand" elevation="0">
       <header>
-        <span class="expansion-panel-title">[[title]]</span>
-        <span class="expansion-panel-value">[[_value(expanded, value)]]</span>
+        <span class="expansion-panel-title">
+          <slot name="title"></slot>
+        </span>
+        <span class="expansion-panel-value" hidden="[[expanded]]">
+          <slot name="value"></slot>
+        </span>
+        <span class="expansion-panel-value" hidden="[[!expanded]]">
+          <slot name="value-expanded"></slot>
+        </span>
         <paper-icon-button icon="[[_icon(expanded)]]" title="Expand / collapse card contents" on-tap="toggle"></paper-icon-button>
       </header>
       <div class="expansion-panel-content" id="wrapper">
         <div class="expansion-panel-overflow" id="content">
-          <content></content>
-          <footer class="expansion-panel-buttons" id="buttons"></footer>
+          <slot></slot>
         </div>
       </div>
     </paper-material>
@@ -172,21 +180,6 @@ Custom property | Description | Default
       is: 'paper-expansion-panel',
       properties: {
         /**
-         * `title` indicates the title of the expansion panel.
-         */
-        title: String,
-
-        /**
-         * `value` the content to display in the header when the panel is collapsed.
-         */
-        value: String,
-
-        /**
-         * `valueExpanded` the content to display in the header when the panel is expanded.
-         */
-        valueExpanded: String,
-
-        /**
          * `expanded` defines whether the panel is expanded or collapsed.
          */
         expanded: {
@@ -195,7 +188,6 @@ Custom property | Description | Default
           value: false
         }
       },
-
 
       /**
        * Collapses and expands the panel. Takes an optional
@@ -233,19 +225,6 @@ Custom property | Description | Default
        */
       collapse: function () {
         return this.toggle(false);
-      },
-
-      attached: function () {
-        // Move elements with the `class` button to the action area
-        [].slice.call(this.querySelectorAll('.button')).forEach(function (btn) {
-          this.$.buttons.appendChild(btn);
-        }, this);
-
-        Polymer.updateStyles();
-      },
-
-      _value: function (expanded) {
-        return expanded ? (this.valueExpanded || this.value) : this.value;
       },
 
       _icon: function (expanded) {
