@@ -97,8 +97,6 @@ Custom property | Description | Default
         white-space: nowrap;
         transition: initial;
         margin-right: 8px;
-      }
-      .expansion-panel-title ::slotted([slot=title]), .expansion-panel-value ::slotted([slot=value]) {
         overflow: hidden;
         text-overflow: ellipsis;
       }
@@ -119,9 +117,6 @@ Custom property | Description | Default
       .expansion-panel-value {
         color: var(--paper-expansion-panel-title-color, rgba(0,0,0,0.54));
         flex: 1;
-      }
-      .expansion-panel-overflow {
-        padding-top: 16px;
       }
       .expansion-panel-content {
         overflow: hidden;
@@ -196,6 +191,8 @@ Custom property | Description | Default
        * @param {boolean} expanded The panel is to be expanded.
        */
       toggle: function (e) {
+        document.activeElement.blur();
+
         if (e && e.stopPropagation) {
           e.cancelBubble = true;
           e.stopPropagation();
