@@ -63,40 +63,38 @@ Custom property | Description | Default
         background: var(--paper-expansion-panel-background-color, #fff);
         padding: 8px 16px 8px 24px;
       }
-      paper-material:hover {
-        background: var(--paper-expansion-panel-hover-color, #f4f4f4);
-        cursor: pointer;
+      @media (pointer:none) {
+        :host(:not([expanded])) paper-material:hover {
+          background: var(--paper-expansion-panel-hover-color, #f4f4f4);
+          cursor: pointer;
+        }
       }
 
       /* EXPANSION STATES */
-      :host([expanded]) paper-material:hover{
-        background: var(--paper-expansion-panel-background-color, #fff);
-        cursor: default;
-      }
       :host([expanded]) paper-material{
-        box-shadow:
-          0 2px 2px 0 rgba(0, 0, 0, 0.14),
-          0 1px 5px 0 rgba(0, 0, 0, 0.12),
-          0 3px 1px -2px rgba(0, 0, 0, 0.2);
         margin-bottom: 16px;
       }
       :host([expanded]) .expansion-panel-content {
         opacity: 1;
       }
-      :host([expanded]) .expansion-panel-value,
+      :host([expanded]) .expansion-panel-value {
         opacity: 0;
       }
       :host([expanded]) .expansion-panel-title {
-        text-rendering: geometricPrecision;
-        font-weight: bold;
+        flex: 1;
       }
 
       /* CONTENT BLOCKS */
       .expansion-panel-title,
       .expansion-panel-value {
+        text-rendering: geometricPrecision;
         white-space: nowrap;
         transition: initial;
         margin-right: 8px;
+      }
+
+      .expansion-panel-title ::slotted(*),
+      .expansion-panel-value ::slotted(*) {
         overflow: hidden;
         text-overflow: ellipsis;
       }
@@ -104,12 +102,12 @@ Custom property | Description | Default
         color: var(--paper-expansion-panel-title-color, #000);
       }
       @media (max-width: 420px) {
-        .expansion-panel-title {
+        :host(:not([expanded])) .expansion-panel-title {
           max-width: 70px;
         }
       }
       @media (min-width: 480px) {
-        .expansion-panel-title {
+        :host(:not([expanded])) .expansion-panel-title {
           width: 200px;
         }
       }
@@ -157,9 +155,6 @@ Custom property | Description | Default
         <span class="expansion-panel-value" hidden="[[expanded]]">
           <slot name="value"></slot>
         </span>
-        <span class="expansion-panel-value" hidden="[[!expanded]]">
-          <slot name="value-expanded"></slot>
-        </span>
         <paper-icon-button icon="[[_icon(expanded)]]" title="Expand / collapse card contents" on-tap="toggle"></paper-icon-button>
       </header>
       <div class="expansion-panel-content" id="wrapper">
@@ -191,8 +186,6 @@ Custom property | Description | Default
        * @param {boolean} expanded The panel is to be expanded.
        */
       toggle: function (e) {
-        document.activeElement.blur();
-
         if (e && e.stopPropagation) {
           e.cancelBubble = true;
           e.stopPropagation();
