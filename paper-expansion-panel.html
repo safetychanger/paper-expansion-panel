@@ -175,7 +175,8 @@ Custom property | Description | Default
         expanded: {
           type: Boolean,
           reflectToAttribute: true,
-          value: false
+          notify: true,
+          value: false,
         }
       },
 
@@ -197,8 +198,12 @@ Custom property | Description | Default
           return;
         }
 
-        // Set the height to the calculated content
-        this.$.wrapper.style.height = (e && this.$.content.offsetHeight || 0) + 'px';
+        if (e) {
+          this.calculateHeight();
+        }
+        else {
+          this.$.wrapper.style.height = '0px';
+        }
 
         this.set('expanded', e);
       },
@@ -217,8 +222,17 @@ Custom property | Description | Default
         return this.toggle(false);
       },
 
+      /**
+       * Set the height to the calculated content
+       */
+      calculateHeight: function () {
+        this.$.wrapper.style.height = (this.$.content.offsetHeight || 0) + 'px';
+      },
+
+      /**
+       * Determines icon based on expanded state
+       */
       _icon: function (expanded) {
-        // Determines icon based on expanded state
         return 'expand-'.concat(expanded ? 'less' : 'more');
       }
     });
